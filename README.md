@@ -1,98 +1,262 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# MediFlow Backend
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+NestJS backend for the MediFlow doctor booking system. This service handles authentication, users, doctors, patients, clinics, specialties, availability, appointments, prescriptions, medical records, reviews, payments, notifications, admin summaries, and reports.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Tech Stack
 
-## Description
+- NestJS
+- Prisma
+- PostgreSQL
+- JWT authentication
+- Swagger API docs
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Features
 
-## Project setup
+- Patient and doctor registration
+- Login, refresh token, logout, current user profile
+- Doctor directory, specialties, and clinics
+- Doctor availability and slot management
+- Appointment booking, status updates, and rescheduling
+- Prescriptions and medical records
+- Reviews and notifications
+- Payments and reporting
+- Admin dashboard endpoints
 
-```bash
-$ npm install
+## Project Structure
+
+```text
+src/
+  common/
+  config/
+  modules/
+    admin/
+    appointments/
+    auth/
+    availability/
+    clinics/
+    doctors/
+    medical-records/
+    notifications/
+    patients/
+    payments/
+    prescriptions/
+    reports/
+    reviews/
+    specialties/
+    users/
+  prisma/
+prisma/
+test/
 ```
 
-## Compile and run the project
+## Environment Variables
 
-```bash
-# development
-$ npm run start
+Create a `.env` file in the project root. You can copy from `.env.example`.
 
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+```env
+PORT=4000
+NODE_ENV=development
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/doctor_booking_db?schema=public"
+JWT_ACCESS_SECRET=change_me_access
+JWT_REFRESH_SECRET=change_me_refresh
+JWT_ACCESS_EXPIRES_IN=15m
+JWT_REFRESH_EXPIRES_IN=7d
+FRONTEND_URL=http://localhost:3000
+SWAGGER_PATH=docs
 ```
 
-## Run tests
+Important:
+
+- `FRONTEND_URL` must match the frontend app URL for CORS.
+- If your database password contains `@`, encode it as `%40` in `DATABASE_URL`.
+- Do not commit the real `.env` file.
+
+## Installation
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+npm install
 ```
 
-## Deployment
+## Database Setup
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+1. Create a PostgreSQL database.
+2. Update `DATABASE_URL` in `.env`.
+3. Run migrations:
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+npm run prisma:migrate
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+4. Generate Prisma client if needed:
 
-## Resources
+```bash
+npm run prisma:generate
+```
 
-Check out a few resources that may come in handy when working with NestJS:
+5. Optional: inspect the database:
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+```bash
+npm run prisma:studio
+```
 
-## Support
+## Run the Application
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+Development:
 
-## Stay in touch
+```bash
+npm run start:dev
+```
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+Standard start:
 
-## License
+```bash
+npm run start
+```
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+Production build:
+
+```bash
+npm run build
+npm run start:prod
+```
+
+The API runs on:
+
+```text
+http://localhost:4000
+```
+
+## Swagger Documentation
+
+Swagger is available at:
+
+```text
+http://localhost:4000/docs
+```
+
+If `SWAGGER_PATH` is changed in `.env`, use that custom path instead.
+
+## Authentication Flow
+
+Frontend integration should start with the auth module.
+
+Public auth endpoints:
+
+- `POST /auth/register/patient`
+- `POST /auth/register/doctor`
+- `POST /auth/login`
+- `POST /auth/refresh`
+
+Protected auth endpoints:
+
+- `GET /auth/me`
+- `POST /auth/logout`
+
+Protected requests must send:
+
+```http
+Authorization: Bearer <accessToken>
+```
+
+Notes:
+
+- Login only works for users that already exist in the database.
+- Registration creates the user and returns JWT tokens.
+- `refreshToken` is stored as a hash in the database.
+
+## Main API Modules
+
+- `Auth` -> `/auth`
+- `Users` -> `/users`
+- `Patients` -> `/patients`
+- `Doctors` -> `/doctors`
+- `Specialties` -> `/specialties`
+- `Clinics` -> `/clinics`
+- `Availability` -> `/availability`
+- `Appointments` -> `/appointments`
+- `Medical Records` -> `/medical-records`
+- `Prescriptions` -> `/prescriptions`
+- `Reviews` -> `/reviews`
+- `Payments` -> `/payments`
+- `Notifications` -> `/notifications`
+- `Admin` -> `/admin`
+- `Reports` -> `/reports`
+
+## Frontend Integration Notes
+
+The frontend and backend can live in separate repositories. Integration is done by calling backend APIs from the frontend.
+
+Frontend should keep the backend base URL in environment variables:
+
+For Vite:
+
+```env
+VITE_API_BASE_URL=http://localhost:4000
+```
+
+For Next.js:
+
+```env
+NEXT_PUBLIC_API_BASE_URL=http://localhost:4000
+```
+
+Backend should allow the frontend origin:
+
+```env
+FRONTEND_URL=http://localhost:3000
+```
+
+Recommended integration order:
+
+1. Auth
+2. Doctors and specialties
+3. Availability and slots
+4. Appointments
+5. Dashboard, notifications, records, prescriptions, and payments
+
+## Common Commands
+
+```bash
+npm run build
+npm run format
+npm run lint
+npm run test
+npm run test:e2e
+npm run test:cov
+npm run prisma:validate
+```
+
+## API Response Validation
+
+This project uses Nest global validation with:
+
+- `whitelist: true`
+- `forbidNonWhitelisted: true`
+- `transform: true`
+
+That means frontend request bodies must match DTO fields exactly.
+
+## Git Notes
+
+Recommended files to commit:
+
+- `src/`
+- `prisma/`
+- `test/`
+- `package.json`
+- `package-lock.json`
+- `.env.example`
+- config files
+
+Recommended files not to commit:
+
+- `.env`
+- `node_modules/`
+- `dist/`
+
+## Next Backend Steps
+
+- Add project-specific examples for each module in Swagger or README
+- Seed demo data for specialties, clinics, doctors, and patients
+- Add role-based usage examples for frontend teams
+- Add deployment instructions for staging and production
