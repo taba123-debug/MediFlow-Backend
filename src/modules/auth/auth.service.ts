@@ -99,12 +99,12 @@ export class AuthService {
     });
 
     if (!user) {
-      throw new UnauthorizedException('Invalid credentials.');
+      throw new UnauthorizedException('Invalid email or password');
     }
 
     const isValidPassword = await bcrypt.compare(dto.password, user.passwordHash);
     if (!isValidPassword) {
-      throw new UnauthorizedException('Invalid credentials.');
+      throw new UnauthorizedException('Invalid email or password');
     }
 
     return this.issueTokens(user.id, user.email, user.role);
@@ -118,12 +118,12 @@ export class AuthService {
     const user = await this.prisma.user.findUnique({ where: { id: payload.sub } });
 
     if (!user?.refreshTokenHash) {
-      throw new UnauthorizedException('Refresh token is invalid.');
+      throw new UnauthorizedException('Invalid refresh token');
     }
 
     const isValid = await bcrypt.compare(refreshToken, user.refreshTokenHash);
     if (!isValid) {
-      throw new UnauthorizedException('Refresh token is invalid.');
+      throw new UnauthorizedException('Invalid refresh token');
     }
 
     return this.issueTokens(user.id, user.email, user.role);
