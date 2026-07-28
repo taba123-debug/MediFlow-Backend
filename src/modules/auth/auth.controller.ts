@@ -1,13 +1,22 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import {
-  ApiBearerAuth,
-  ApiOperation,
-  ApiTags,
-} from '@nestjs/swagger';
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Post,
+} from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Public } from '../../common/decorators/public.decorator';
+import { AuthUser } from '../../common/interfaces/auth-user.interface';
 import { AuthService } from './auth.service';
-import { LoginDto, RefreshTokenDto, RegisterDoctorDto, RegisterPatientDto } from './dto/auth.dto';
+import {
+  LoginDto,
+  RefreshTokenDto,
+  RegisterDoctorDto,
+  RegisterPatientDto,
+} from './dto/auth.dto';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -47,14 +56,14 @@ export class AuthController {
   @ApiBearerAuth()
   @Get('me')
   @ApiOperation({ summary: 'Get current authenticated user' })
-  me(@CurrentUser() user: any) {
+  me(@CurrentUser() user: AuthUser) {
     return this.authService.me(user);
   }
 
   @ApiBearerAuth()
   @Post('logout')
   @ApiOperation({ summary: 'Logout current user' })
-  logout(@CurrentUser() user: any) {
+  logout(@CurrentUser() user: AuthUser) {
     return this.authService.logout(user.sub);
   }
 }

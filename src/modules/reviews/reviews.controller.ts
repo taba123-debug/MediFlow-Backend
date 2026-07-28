@@ -1,8 +1,21 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Public } from '../../common/decorators/public.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
-import { CreateReviewDto, ReviewsQueryDto, UpdateReviewDto } from './dto/reviews.dto';
+import {
+  CreateReviewDto,
+  ReviewsQueryDto,
+  UpdateReviewDto,
+} from './dto/reviews.dto';
 import { ReviewsService } from './reviews.service';
 
 @ApiTags('Reviews')
@@ -27,7 +40,11 @@ export class ReviewsController {
   @ApiBearerAuth()
   @Patch(':id')
   @ApiOperation({ summary: 'Update a review' })
-  update(@Param('id') id: string, @Body() dto: UpdateReviewDto, @CurrentUser() user: any) {
+  update(
+    @Param('id') id: string,
+    @Body() dto: UpdateReviewDto,
+    @CurrentUser() user: any,
+  ) {
     return this.reviewsService.update(id, dto, user);
   }
 

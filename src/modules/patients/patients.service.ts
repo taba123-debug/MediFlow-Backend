@@ -11,9 +11,15 @@ import {
   UserRole,
 } from '@prisma/client';
 import { AuthUser } from '../../common/interfaces/auth-user.interface';
-import { buildPaginatedResponse, buildPagination } from '../../common/utils/pagination.util';
+import {
+  buildPaginatedResponse,
+  buildPagination,
+} from '../../common/utils/pagination.util';
 import { PrismaService } from '../../prisma/prisma.service';
-import { CreateAppointmentDto, RescheduleAppointmentDto } from '../appointments/dto/appointments.dto';
+import {
+  CreateAppointmentDto,
+  RescheduleAppointmentDto,
+} from '../appointments/dto/appointments.dto';
 import { CreateReviewDto, UpdateReviewDto } from '../reviews/dto/reviews.dto';
 import {
   CancelPatientAppointmentDto,
@@ -38,8 +44,12 @@ export class PatientsService {
       ? {
           user: {
             OR: [
-              { name: { contains: query.search, mode: 'insensitive' as const } },
-              { email: { contains: query.search, mode: 'insensitive' as const } },
+              {
+                name: { contains: query.search, mode: 'insensitive' as const },
+              },
+              {
+                email: { contains: query.search, mode: 'insensitive' as const },
+              },
             ],
           },
         }
@@ -71,18 +81,24 @@ export class PatientsService {
     if (!patient) throw new NotFoundException('Patient profile not found.');
 
     if (user.role === UserRole.PATIENT && patient.userId !== user.sub) {
-      throw new ForbiddenException('You can only access your own patient profile.');
+      throw new ForbiddenException(
+        'You can only access your own patient profile.',
+      );
     }
 
     return patient;
   }
 
   async update(id: string, dto: UpdatePatientProfileDto, user: AuthUser) {
-    const patient = await this.prisma.patientProfile.findUnique({ where: { id } });
+    const patient = await this.prisma.patientProfile.findUnique({
+      where: { id },
+    });
     if (!patient) throw new NotFoundException('Patient profile not found.');
 
     if (user.role === UserRole.PATIENT && patient.userId !== user.sub) {
-      throw new ForbiddenException('You can only update your own patient profile.');
+      throw new ForbiddenException(
+        'You can only update your own patient profile.',
+      );
     }
 
     return this.prisma.patientProfile.update({
@@ -103,48 +119,64 @@ export class PatientsService {
     const patientProfile = await this.getCurrentPatientProfile(user);
     const now = new Date();
 
-    const [upcomingAppointmentsCount, medicalRecordsCount, unreadNotificationsCount, completedAppointmentsCount] =
-      await this.prisma.$transaction([
-        this.prisma.appointment.count({
-          where: {
-            patientId: patientProfile.id,
-            scheduledStartAt: { gte: now },
-            status: { in: this.activeAppointmentStatuses },
-          },
-        }),
-        this.prisma.medicalRecord.count({ where: { patientId: patientProfile.id } }),
-        this.prisma.notification.count({ where: { userId: user.sub, isRead: false } }),
-        this.prisma.appointment.count({
-          where: { patientId: patientProfile.id, status: AppointmentStatus.COMPLETED },
-        }),
-      ]);
-
-    const [upcomingAppointments, recommendedDoctors, notificationsPreview] = await this.prisma.$transaction([
-      this.prisma.appointment.findMany({
+    const [
+      upcomingAppointmentsCount,
+      medicalRecordsCount,
+      unreadNotificationsCount,
+      completedAppointmentsCount,
+    ] = await this.prisma.$transaction([
+      this.prisma.appointment.count({
         where: {
           patientId: patientProfile.id,
           scheduledStartAt: { gte: now },
           status: { in: this.activeAppointmentStatuses },
         },
-        include: {
-          doctor: { include: { user: true, specialty: true, clinic: true } },
-          clinic: true,
+      }),
+      this.prisma.medicalRecord.count({
+        where: { patientId: patientProfile.id },
+      }),
+      this.prisma.notification.count({
+        where: { userId: user.sub, isRead: false },
+      }),
+      this.prisma.appointment.count({
+        where: {
+          patientId: patientProfile.id,
+          status: AppointmentStatus.COMPLETED,
         },
-        orderBy: { scheduledStartAt: 'asc' },
-        take: 5,
-      }),
-      this.prisma.doctorProfile.findMany({
-        where: { isVerified: true },
-        include: { user: true, specialty: true, clinic: true },
-        orderBy: [{ ratingAverage: 'desc' }, { reviewsCount: 'desc' }, { createdAt: 'desc' }],
-        take: 6,
-      }),
-      this.prisma.notification.findMany({
-        where: { userId: user.sub },
-        orderBy: { createdAt: 'desc' },
-        take: 5,
       }),
     ]);
+
+    const [upcomingAppointments, recommendedDoctors, notificationsPreview] =
+      await this.prisma.$transaction([
+        this.prisma.appointment.findMany({
+          where: {
+            patientId: patientProfile.id,
+            scheduledStartAt: { gte: now },
+            status: { in: this.activeAppointmentStatuses },
+          },
+          include: {
+            doctor: { include: { user: true, specialty: true, clinic: true } },
+            clinic: true,
+          },
+          orderBy: { scheduledStartAt: 'asc' },
+          take: 5,
+        }),
+        this.prisma.doctorProfile.findMany({
+          where: { isVerified: true },
+          include: { user: true, specialty: true, clinic: true },
+          orderBy: [
+            { ratingAverage: 'desc' },
+            { reviewsCount: 'desc' },
+            { createdAt: 'desc' },
+          ],
+          take: 6,
+        }),
+        this.prisma.notification.findMany({
+          where: { userId: user.sub },
+          orderBy: { createdAt: 'desc' },
+          take: 5,
+        }),
+      ]);
 
     return {
       profile: {
@@ -162,7 +194,9 @@ export class PatientsService {
       upcomingAppointments: upcomingAppointments.map((appointment) =>
         this.mapDashboardAppointment(appointment),
       ),
-      recommendedDoctors: recommendedDoctors.map((doctor) => this.mapDoctorListItem(doctor)),
+      recommendedDoctors: recommendedDoctors.map((doctor) =>
+        this.mapDoctorListItem(doctor),
+      ),
       notificationsPreview: notificationsPreview.map((notification) =>
         this.mapNotificationItem(notification),
       ),
@@ -177,28 +211,32 @@ export class PatientsService {
   async updateProfile(user: AuthUser, dto: PatientProfileUpdateDto) {
     const patientProfile = await this.getCurrentPatientProfile(user);
 
-    const [updatedUser, updatedPatientProfile] = await this.prisma.$transaction([
-      this.prisma.user.update({
-        where: { id: patientProfile.userId },
-        data: {
-          name: dto.name,
-          phone: dto.phone,
-          location: dto.location,
-          avatarUrl: dto.avatarUrl,
-        },
-      }),
-      this.prisma.patientProfile.update({
-        where: { id: patientProfile.id },
-        data: {
-          dateOfBirth: dto.dateOfBirth ? new Date(dto.dateOfBirth) : undefined,
-          gender: dto.gender,
-          bloodGroup: dto.bloodGroup,
-          address: dto.address,
-          emergencyContactName: dto.emergencyContactName,
-          emergencyContactPhone: dto.emergencyContactPhone,
-        },
-      }),
-    ]);
+    const [updatedUser, updatedPatientProfile] = await this.prisma.$transaction(
+      [
+        this.prisma.user.update({
+          where: { id: patientProfile.userId },
+          data: {
+            name: dto.name,
+            phone: dto.phone,
+            location: dto.location,
+            avatarUrl: dto.avatarUrl,
+          },
+        }),
+        this.prisma.patientProfile.update({
+          where: { id: patientProfile.id },
+          data: {
+            dateOfBirth: dto.dateOfBirth
+              ? new Date(dto.dateOfBirth)
+              : undefined,
+            gender: dto.gender,
+            bloodGroup: dto.bloodGroup,
+            address: dto.address,
+            emergencyContactName: dto.emergencyContactName,
+            emergencyContactPhone: dto.emergencyContactPhone,
+          },
+        }),
+      ],
+    );
 
     return this.mapPatientProfileResponse({
       ...updatedPatientProfile,
@@ -226,9 +264,19 @@ export class PatientsService {
       ...(query.search
         ? {
             OR: [
-              { user: { name: { contains: query.search, mode: 'insensitive' } } },
-              { specialty: { name: { contains: query.search, mode: 'insensitive' } } },
-              { clinic: { name: { contains: query.search, mode: 'insensitive' } } },
+              {
+                user: { name: { contains: query.search, mode: 'insensitive' } },
+              },
+              {
+                specialty: {
+                  name: { contains: query.search, mode: 'insensitive' },
+                },
+              },
+              {
+                clinic: {
+                  name: { contains: query.search, mode: 'insensitive' },
+                },
+              },
             ],
           }
         : {}),
@@ -244,7 +292,11 @@ export class PatientsService {
           specialty: true,
           clinic: true,
         },
-        orderBy: [{ ratingAverage: 'desc' }, { reviewsCount: 'desc' }, { createdAt: 'desc' }],
+        orderBy: [
+          { ratingAverage: 'desc' },
+          { reviewsCount: 'desc' },
+          { createdAt: 'desc' },
+        ],
       }),
       this.prisma.doctorProfile.count({ where }),
     ]);
@@ -284,7 +336,9 @@ export class PatientsService {
       orderBy: { startAt: 'asc' },
     });
 
-    const availableDates = [...new Set(slots.map((slot) => this.formatDate(slot.slotDate)))];
+    const availableDates = [
+      ...new Set(slots.map((slot) => this.formatDate(slot.slotDate))),
+    ];
 
     return {
       doctorId: doctor.id,
@@ -357,23 +411,35 @@ export class PatientsService {
     });
     if (!doctor) throw new NotFoundException('Doctor profile not found.');
 
-    const slot = await this.prisma.doctorTimeSlot.findUnique({ where: { id: dto.timeSlotId } });
-    if (!slot || !slot.isActive) throw new NotFoundException('Time slot not found.');
+    const slot = await this.prisma.doctorTimeSlot.findUnique({
+      where: { id: dto.timeSlotId },
+    });
+    if (!slot || !slot.isActive)
+      throw new NotFoundException('Time slot not found.');
     if (slot.doctorId !== dto.doctorId) {
-      throw new BadRequestException('Selected time slot does not belong to this doctor.');
+      throw new BadRequestException(
+        'Selected time slot does not belong to this doctor.',
+      );
     }
-    if (slot.isBooked) throw new BadRequestException('This time slot is already booked.');
+    if (slot.isBooked)
+      throw new BadRequestException('This time slot is already booked.');
     if (slot.startAt <= new Date()) {
-      throw new BadRequestException('Appointments cannot be booked in the past.');
+      throw new BadRequestException(
+        'Appointments cannot be booked in the past.',
+      );
     }
 
     const clinicId = dto.clinicId ?? doctor.clinicId ?? undefined;
     if (dto.clinicId && doctor.clinicId && dto.clinicId !== doctor.clinicId) {
-      throw new BadRequestException('Selected clinic does not match the doctor profile.');
+      throw new BadRequestException(
+        'Selected clinic does not match the doctor profile.',
+      );
     }
 
     const appointment = await this.prisma.$transaction(async (tx) => {
-      const freshSlot = await tx.doctorTimeSlot.findUnique({ where: { id: dto.timeSlotId } });
+      const freshSlot = await tx.doctorTimeSlot.findUnique({
+        where: { id: dto.timeSlotId },
+      });
       if (!freshSlot || freshSlot.isBooked || !freshSlot.isActive) {
         throw new BadRequestException('This time slot is no longer available.');
       }
@@ -561,12 +627,21 @@ export class PatientsService {
     };
   }
 
-  async cancelAppointment(user: AuthUser, id: string, dto: CancelPatientAppointmentDto) {
+  async cancelAppointment(
+    user: AuthUser,
+    id: string,
+    dto: CancelPatientAppointmentDto,
+  ) {
     const patientProfile = await this.getCurrentPatientProfile(user);
-    const appointment = await this.findPatientAppointmentOrThrow(patientProfile.id, id);
+    const appointment = await this.findPatientAppointmentOrThrow(
+      patientProfile.id,
+      id,
+    );
 
     if (appointment.status === AppointmentStatus.COMPLETED) {
-      throw new BadRequestException('Completed appointments cannot be cancelled.');
+      throw new BadRequestException(
+        'Completed appointments cannot be cancelled.',
+      );
     }
     if (appointment.status === AppointmentStatus.CANCELLED) {
       throw new BadRequestException('Appointment is already cancelled.');
@@ -599,9 +674,16 @@ export class PatientsService {
     };
   }
 
-  async rescheduleAppointment(user: AuthUser, id: string, dto: RescheduleAppointmentDto) {
+  async rescheduleAppointment(
+    user: AuthUser,
+    id: string,
+    dto: RescheduleAppointmentDto,
+  ) {
     const patientProfile = await this.getCurrentPatientProfile(user);
-    const appointment = await this.findPatientAppointmentOrThrow(patientProfile.id, id);
+    const appointment = await this.findPatientAppointmentOrThrow(
+      patientProfile.id,
+      id,
+    );
 
     if (
       appointment.status === AppointmentStatus.COMPLETED ||
@@ -610,12 +692,16 @@ export class PatientsService {
       throw new BadRequestException('This appointment cannot be rescheduled.');
     }
 
-    const newSlot = await this.prisma.doctorTimeSlot.findUnique({ where: { id: dto.timeSlotId } });
+    const newSlot = await this.prisma.doctorTimeSlot.findUnique({
+      where: { id: dto.timeSlotId },
+    });
     if (!newSlot || newSlot.isBooked || !newSlot.isActive) {
       throw new BadRequestException('Selected time slot is not available.');
     }
     if (newSlot.startAt <= new Date()) {
-      throw new BadRequestException('Appointments cannot be booked in the past.');
+      throw new BadRequestException(
+        'Appointments cannot be booked in the past.',
+      );
     }
     if (newSlot.doctorId !== appointment.doctorId) {
       throw new BadRequestException('New slot must belong to the same doctor.');
@@ -751,13 +837,19 @@ export class PatientsService {
 
   async createReview(user: AuthUser, dto: CreateReviewDto) {
     const patientProfile = await this.getCurrentPatientProfile(user);
-    const appointment = await this.prisma.appointment.findUnique({ where: { id: dto.appointmentId } });
+    const appointment = await this.prisma.appointment.findUnique({
+      where: { id: dto.appointmentId },
+    });
     if (!appointment) throw new NotFoundException('Appointment not found.');
     if (appointment.patientId !== patientProfile.id) {
-      throw new ForbiddenException('Patients can only review their own appointments.');
+      throw new ForbiddenException(
+        'Patients can only review their own appointments.',
+      );
     }
     if (appointment.status !== AppointmentStatus.COMPLETED) {
-      throw new BadRequestException('Only completed appointments can be reviewed.');
+      throw new BadRequestException(
+        'Only completed appointments can be reviewed.',
+      );
     }
 
     const review = await this.prisma.review.create({
@@ -829,7 +921,11 @@ export class PatientsService {
     );
   }
 
-  async readNotification(user: AuthUser, id: string, dto: MarkNotificationReadDto) {
+  async readNotification(
+    user: AuthUser,
+    id: string,
+    dto: MarkNotificationReadDto,
+  ) {
     const notification = await this.prisma.notification.findFirst({
       where: { id, userId: user.sub },
     });
@@ -896,19 +992,26 @@ export class PatientsService {
       include: { user: true },
     });
     if (!patientProfile) {
-      throw new NotFoundException('Patient profile not found for current user.');
+      throw new NotFoundException(
+        'Patient profile not found for current user.',
+      );
     }
 
     return patientProfile;
   }
 
   private async ensureDoctorExists(doctorId: string) {
-    const doctor = await this.prisma.doctorProfile.findUnique({ where: { id: doctorId } });
+    const doctor = await this.prisma.doctorProfile.findUnique({
+      where: { id: doctorId },
+    });
     if (!doctor) throw new NotFoundException('Doctor profile not found.');
     return doctor;
   }
 
-  private async findPatientAppointmentOrThrow(patientId: string, appointmentId: string) {
+  private async findPatientAppointmentOrThrow(
+    patientId: string,
+    appointmentId: string,
+  ) {
     const appointment = await this.prisma.appointment.findFirst({
       where: { id: appointmentId, patientId },
     });
@@ -944,7 +1047,9 @@ export class PatientsService {
       },
       patientProfile: {
         id: patientProfile.id,
-        dateOfBirth: patientProfile.dateOfBirth ? this.formatDate(patientProfile.dateOfBirth) : null,
+        dateOfBirth: patientProfile.dateOfBirth
+          ? this.formatDate(patientProfile.dateOfBirth)
+          : null,
         gender: patientProfile.gender,
         bloodGroup: patientProfile.bloodGroup,
         address: patientProfile.address,
@@ -1000,7 +1105,8 @@ export class PatientsService {
       doctorId: appointment.doctor.id,
       doctorName: appointment.doctor.user.name,
       specialty: appointment.doctor.specialty.name,
-      clinic: appointment.clinic?.name ?? appointment.doctor.clinic?.name ?? null,
+      clinic:
+        appointment.clinic?.name ?? appointment.doctor.clinic?.name ?? null,
       appointmentDate: this.formatDate(appointment.appointmentDate),
       scheduledStartAt: appointment.scheduledStartAt,
       scheduledEndAt: appointment.scheduledEndAt,
@@ -1057,7 +1163,9 @@ export class PatientsService {
       paymentStatus: appointment.paymentStatus,
       canCancel: canManage,
       canReschedule: canManage,
-      canReview: appointment.status === AppointmentStatus.COMPLETED && !appointment.review,
+      canReview:
+        appointment.status === AppointmentStatus.COMPLETED &&
+        !appointment.review,
     };
   }
 

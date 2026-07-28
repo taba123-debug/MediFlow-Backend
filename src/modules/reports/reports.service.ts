@@ -30,21 +30,29 @@ export class ReportsService {
   }
 
   async appointments(query: ReportsQueryDto) {
-    const where = query.from || query.to
-      ? {
-          appointmentDate: {
-            ...(query.from ? { gte: new Date(query.from) } : {}),
-            ...(query.to ? { lte: new Date(query.to) } : {}),
-          },
-        }
-      : {};
+    const where =
+      query.from || query.to
+        ? {
+            appointmentDate: {
+              ...(query.from ? { gte: new Date(query.from) } : {}),
+              ...(query.to ? { lte: new Date(query.to) } : {}),
+            },
+          }
+        : {};
 
-    const [total, completed, cancelled, noShow] = await this.prisma.$transaction([
-      this.prisma.appointment.count({ where }),
-      this.prisma.appointment.count({ where: { ...where, status: AppointmentStatus.COMPLETED } }),
-      this.prisma.appointment.count({ where: { ...where, status: AppointmentStatus.CANCELLED } }),
-      this.prisma.appointment.count({ where: { ...where, status: AppointmentStatus.NO_SHOW } }),
-    ]);
+    const [total, completed, cancelled, noShow] =
+      await this.prisma.$transaction([
+        this.prisma.appointment.count({ where }),
+        this.prisma.appointment.count({
+          where: { ...where, status: AppointmentStatus.COMPLETED },
+        }),
+        this.prisma.appointment.count({
+          where: { ...where, status: AppointmentStatus.CANCELLED },
+        }),
+        this.prisma.appointment.count({
+          where: { ...where, status: AppointmentStatus.NO_SHOW },
+        }),
+      ]);
 
     return { total, completed, cancelled, noShow };
   }

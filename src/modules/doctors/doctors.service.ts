@@ -12,10 +12,19 @@ import {
 } from '@prisma/client';
 import { AuthUser } from '../../common/interfaces/auth-user.interface';
 import { PaginationQueryDto } from '../../common/dto/pagination-query.dto';
-import { buildPaginatedResponse, buildPagination } from '../../common/utils/pagination.util';
+import {
+  buildPaginatedResponse,
+  buildPagination,
+} from '../../common/utils/pagination.util';
 import { PrismaService } from '../../prisma/prisma.service';
-import { ChangeAppointmentStatusDto, RescheduleAppointmentDto } from '../appointments/dto/appointments.dto';
-import { CreateAvailabilityDto, UpdateAvailabilityDto } from '../availability/dto/availability.dto';
+import {
+  ChangeAppointmentStatusDto,
+  RescheduleAppointmentDto,
+} from '../appointments/dto/appointments.dto';
+import {
+  CreateAvailabilityDto,
+  UpdateAvailabilityDto,
+} from '../availability/dto/availability.dto';
 import {
   DoctorAppointmentsQueryDto,
   DoctorCreateMedicalRecordDto,
@@ -46,16 +55,26 @@ export class DoctorsService {
       ...(query.minFee !== undefined || query.maxFee !== undefined
         ? {
             consultationFee: {
-              ...(query.minFee !== undefined ? { gte: new Prisma.Decimal(query.minFee) } : {}),
-              ...(query.maxFee !== undefined ? { lte: new Prisma.Decimal(query.maxFee) } : {}),
+              ...(query.minFee !== undefined
+                ? { gte: new Prisma.Decimal(query.minFee) }
+                : {}),
+              ...(query.maxFee !== undefined
+                ? { lte: new Prisma.Decimal(query.maxFee) }
+                : {}),
             },
           }
         : {}),
       ...(query.search
         ? {
             OR: [
-              { user: { name: { contains: query.search, mode: 'insensitive' } } },
-              { specialty: { name: { contains: query.search, mode: 'insensitive' } } },
+              {
+                user: { name: { contains: query.search, mode: 'insensitive' } },
+              },
+              {
+                specialty: {
+                  name: { contains: query.search, mode: 'insensitive' },
+                },
+              },
             ],
           }
         : {}),
@@ -104,11 +123,15 @@ export class DoctorsService {
   }
 
   async update(id: string, dto: UpdateDoctorProfileDto, user: AuthUser) {
-    const doctor = await this.prisma.doctorProfile.findUnique({ where: { id } });
+    const doctor = await this.prisma.doctorProfile.findUnique({
+      where: { id },
+    });
     if (!doctor) throw new NotFoundException('Doctor profile not found.');
 
     if (user.role === UserRole.DOCTOR && doctor.userId !== user.sub) {
-      throw new ForbiddenException('Doctors can only update their own profile.');
+      throw new ForbiddenException(
+        'Doctors can only update their own profile.',
+      );
     }
 
     return this.prisma.doctorProfile.update({
@@ -119,7 +142,9 @@ export class DoctorsService {
         licenseNumber: dto.licenseNumber,
         experienceYears: dto.experienceYears,
         consultationFee:
-          dto.consultationFee !== undefined ? new Prisma.Decimal(dto.consultationFee) : undefined,
+          dto.consultationFee !== undefined
+            ? new Prisma.Decimal(dto.consultationFee)
+            : undefined,
         about: dto.about,
         qualification: dto.qualification,
         isVerified: dto.isVerified,
@@ -136,71 +161,76 @@ export class DoctorsService {
     const doctor = await this.getCurrentDoctorProfile(user);
     const now = new Date();
 
-    const [todayAppointments, upcomingAppointmentsCount, pendingReviewsCount, uniquePatientsRows] =
-      await this.prisma.$transaction([
-        this.prisma.appointment.count({
-          where: {
-            doctorId: doctor.id,
-            appointmentDate: {
-              gte: this.startOfDayFromDate(now),
-              lt: this.endOfDayExclusiveFromDate(now),
-            },
+    const [
+      todayAppointments,
+      upcomingAppointmentsCount,
+      pendingReviewsCount,
+      uniquePatientsRows,
+    ] = await this.prisma.$transaction([
+      this.prisma.appointment.count({
+        where: {
+          doctorId: doctor.id,
+          appointmentDate: {
+            gte: this.startOfDayFromDate(now),
+            lt: this.endOfDayExclusiveFromDate(now),
           },
-        }),
-        this.prisma.appointment.count({
-          where: {
-            doctorId: doctor.id,
-            scheduledStartAt: { gte: now },
-            status: { in: this.activeAppointmentStatuses },
-          },
-        }),
-        this.prisma.appointment.count({
-          where: {
-            doctorId: doctor.id,
-            status: AppointmentStatus.COMPLETED,
-            review: {
-              is: null,
-            },
-          },
-        }),
-        this.prisma.appointment.findMany({
-          where: { doctorId: doctor.id },
-          distinct: ['patientId'],
-          select: { patientId: true },
-        }),
-      ]);
-    const uniquePatientsCount = uniquePatientsRows.length;
-
-    const [upcomingAppointments, recentPatients, recentPayments] = await this.prisma.$transaction([
-      this.prisma.appointment.findMany({
+        },
+      }),
+      this.prisma.appointment.count({
         where: {
           doctorId: doctor.id,
           scheduledStartAt: { gte: now },
           status: { in: this.activeAppointmentStatuses },
         },
-        include: {
-          patient: { include: { user: true } },
-          clinic: true,
+      }),
+      this.prisma.appointment.count({
+        where: {
+          doctorId: doctor.id,
+          status: AppointmentStatus.COMPLETED,
+          review: {
+            is: null,
+          },
         },
-        orderBy: { scheduledStartAt: 'asc' },
-        take: 5,
       }),
       this.prisma.appointment.findMany({
         where: { doctorId: doctor.id },
-        include: {
-          patient: { include: { user: true } },
-        },
         distinct: ['patientId'],
-        orderBy: { createdAt: 'desc' },
-        take: 5,
-      }),
-      this.prisma.payment.findMany({
-        where: { doctorId: doctor.id },
-        include: { appointment: true },
-        orderBy: { createdAt: 'desc' },
-        take: 5,
+        select: { patientId: true },
       }),
     ]);
+    const uniquePatientsCount = uniquePatientsRows.length;
+
+    const [upcomingAppointments, recentPatients, recentPayments] =
+      await this.prisma.$transaction([
+        this.prisma.appointment.findMany({
+          where: {
+            doctorId: doctor.id,
+            scheduledStartAt: { gte: now },
+            status: { in: this.activeAppointmentStatuses },
+          },
+          include: {
+            patient: { include: { user: true } },
+            clinic: true,
+          },
+          orderBy: { scheduledStartAt: 'asc' },
+          take: 5,
+        }),
+        this.prisma.appointment.findMany({
+          where: { doctorId: doctor.id },
+          include: {
+            patient: { include: { user: true } },
+          },
+          distinct: ['patientId'],
+          orderBy: { createdAt: 'desc' },
+          take: 5,
+        }),
+        this.prisma.payment.findMany({
+          where: { doctorId: doctor.id },
+          include: { appointment: true },
+          orderBy: { createdAt: 'desc' },
+          take: 5,
+        }),
+      ]);
 
     const earnings = await this.getDoctorEarnings(user, {});
 
@@ -238,7 +268,9 @@ export class DoctorsService {
         email: appointment.patient.user.email,
         lastAppointmentAt: appointment.createdAt,
       })),
-      paymentsPreview: recentPayments.map((payment) => this.mapDoctorPayment(payment)),
+      paymentsPreview: recentPayments.map((payment) =>
+        this.mapDoctorPayment(payment),
+      ),
     };
   }
 
@@ -251,12 +283,16 @@ export class DoctorsService {
     const doctor = await this.getCurrentDoctorProfile(user);
 
     if (dto.specialtyId) {
-      const specialty = await this.prisma.specialty.findUnique({ where: { id: dto.specialtyId } });
+      const specialty = await this.prisma.specialty.findUnique({
+        where: { id: dto.specialtyId },
+      });
       if (!specialty) throw new NotFoundException('Specialty not found.');
     }
 
     if (dto.clinicId) {
-      const clinic = await this.prisma.clinic.findUnique({ where: { id: dto.clinicId } });
+      const clinic = await this.prisma.clinic.findUnique({
+        where: { id: dto.clinicId },
+      });
       if (!clinic) throw new NotFoundException('Clinic not found.');
     }
 
@@ -278,7 +314,9 @@ export class DoctorsService {
           licenseNumber: dto.licenseNumber,
           experienceYears: dto.experienceYears,
           consultationFee:
-            dto.consultationFee !== undefined ? new Prisma.Decimal(dto.consultationFee) : undefined,
+            dto.consultationFee !== undefined
+              ? new Prisma.Decimal(dto.consultationFee)
+              : undefined,
           about: dto.about,
           qualification: dto.qualification,
         },
@@ -322,9 +360,15 @@ export class DoctorsService {
     });
   }
 
-  async updateDoctorAvailability(user: AuthUser, id: string, dto: UpdateAvailabilityDto) {
+  async updateDoctorAvailability(
+    user: AuthUser,
+    id: string,
+    dto: UpdateAvailabilityDto,
+  ) {
     const doctor = await this.getCurrentDoctorProfile(user);
-    const availability = await this.prisma.doctorAvailability.findUnique({ where: { id } });
+    const availability = await this.prisma.doctorAvailability.findUnique({
+      where: { id },
+    });
     if (!availability || availability.doctorId !== doctor.id) {
       throw new NotFoundException('Availability not found.');
     }
@@ -337,7 +381,9 @@ export class DoctorsService {
 
   async deleteDoctorAvailability(user: AuthUser, id: string) {
     const doctor = await this.getCurrentDoctorProfile(user);
-    const availability = await this.prisma.doctorAvailability.findUnique({ where: { id } });
+    const availability = await this.prisma.doctorAvailability.findUnique({
+      where: { id },
+    });
     if (!availability || availability.doctorId !== doctor.id) {
       throw new NotFoundException('Availability not found.');
     }
@@ -377,7 +423,9 @@ export class DoctorsService {
   async createDoctorSlot(user: AuthUser, dto: DoctorCreateTimeSlotDto) {
     const doctor = await this.getCurrentDoctorProfile(user);
     if (!dto.slotDate || !dto.startAt || !dto.endAt) {
-      throw new BadRequestException('slotDate, startAt, and endAt are required.');
+      throw new BadRequestException(
+        'slotDate, startAt, and endAt are required.',
+      );
     }
 
     if (dto.availabilityId) {
@@ -413,7 +461,10 @@ export class DoctorsService {
     return this.prisma.doctorTimeSlot.delete({ where: { id } });
   }
 
-  async getDoctorAppointments(user: AuthUser, query: DoctorAppointmentsQueryDto) {
+  async getDoctorAppointments(
+    user: AuthUser,
+    query: DoctorAppointmentsQueryDto,
+  ) {
     const doctor = await this.getCurrentDoctorProfile(user);
     const { skip, take } = buildPagination(query);
 
@@ -433,7 +484,13 @@ export class DoctorsService {
         ? {
             OR: [
               { reason: { contains: query.search, mode: 'insensitive' } },
-              { patient: { user: { name: { contains: query.search, mode: 'insensitive' } } } },
+              {
+                patient: {
+                  user: {
+                    name: { contains: query.search, mode: 'insensitive' },
+                  },
+                },
+              },
             ],
           }
         : {}),
@@ -533,7 +590,11 @@ export class DoctorsService {
     };
   }
 
-  async changeDoctorAppointmentStatus(user: AuthUser, id: string, dto: ChangeAppointmentStatusDto) {
+  async changeDoctorAppointmentStatus(
+    user: AuthUser,
+    id: string,
+    dto: ChangeAppointmentStatusDto,
+  ) {
     const doctor = await this.getCurrentDoctorProfile(user);
     const appointment = await this.prisma.appointment.findFirst({
       where: { id, doctorId: doctor.id },
@@ -541,7 +602,9 @@ export class DoctorsService {
     if (!appointment) throw new NotFoundException('Appointment not found.');
 
     if (dto.status === AppointmentStatus.CANCELLED) {
-      throw new BadRequestException('Doctors cannot cancel appointments using this endpoint.');
+      throw new BadRequestException(
+        'Doctors cannot cancel appointments using this endpoint.',
+      );
     }
 
     if (dto.status === AppointmentStatus.COMPLETED) {
@@ -555,12 +618,17 @@ export class DoctorsService {
       where: { id },
       data: {
         status: dto.status,
-        rejectionReason: dto.status === AppointmentStatus.REJECTED ? dto.reason : undefined,
+        rejectionReason:
+          dto.status === AppointmentStatus.REJECTED ? dto.reason : undefined,
       },
     });
   }
 
-  async rescheduleDoctorAppointment(user: AuthUser, id: string, dto: RescheduleAppointmentDto) {
+  async rescheduleDoctorAppointment(
+    user: AuthUser,
+    id: string,
+    dto: RescheduleAppointmentDto,
+  ) {
     const doctor = await this.getCurrentDoctorProfile(user);
     const appointment = await this.prisma.appointment.findFirst({
       where: { id, doctorId: doctor.id },
@@ -573,12 +641,21 @@ export class DoctorsService {
       throw new BadRequestException('This appointment cannot be rescheduled.');
     }
 
-    const newSlot = await this.prisma.doctorTimeSlot.findUnique({ where: { id: dto.timeSlotId } });
-    if (!newSlot || newSlot.doctorId !== doctor.id || newSlot.isBooked || !newSlot.isActive) {
+    const newSlot = await this.prisma.doctorTimeSlot.findUnique({
+      where: { id: dto.timeSlotId },
+    });
+    if (
+      !newSlot ||
+      newSlot.doctorId !== doctor.id ||
+      newSlot.isBooked ||
+      !newSlot.isActive
+    ) {
       throw new BadRequestException('Selected time slot is not available.');
     }
     if (newSlot.startAt <= new Date()) {
-      throw new BadRequestException('Appointments cannot be booked in the past.');
+      throw new BadRequestException(
+        'Appointments cannot be booked in the past.',
+      );
     }
 
     const updatedAppointment = await this.prisma.$transaction(async (tx) => {
@@ -655,7 +732,9 @@ export class DoctorsService {
                   user: {
                     OR: [
                       { name: { contains: query.search, mode: 'insensitive' } },
-                      { email: { contains: query.search, mode: 'insensitive' } },
+                      {
+                        email: { contains: query.search, mode: 'insensitive' },
+                      },
                     ],
                   },
                 },
@@ -669,15 +748,16 @@ export class DoctorsService {
 
     const data = await Promise.all(
       appointments.map(async (appointment) => {
-        const [appointmentsCount, lastAppointment] = await this.prisma.$transaction([
-          this.prisma.appointment.count({
-            where: { doctorId: doctor.id, patientId: appointment.patientId },
-          }),
-          this.prisma.appointment.findFirst({
-            where: { doctorId: doctor.id, patientId: appointment.patientId },
-            orderBy: { scheduledStartAt: 'desc' },
-          }),
-        ]);
+        const [appointmentsCount, lastAppointment] =
+          await this.prisma.$transaction([
+            this.prisma.appointment.count({
+              where: { doctorId: doctor.id, patientId: appointment.patientId },
+            }),
+            this.prisma.appointment.findFirst({
+              where: { doctorId: doctor.id, patientId: appointment.patientId },
+              orderBy: { scheduledStartAt: 'desc' },
+            }),
+          ]);
 
         return {
           patientId: appointment.patient.id,
@@ -711,23 +791,24 @@ export class DoctorsService {
     });
     if (!patient) throw new NotFoundException('Patient not found.');
 
-    const [appointments, medicalRecords, prescriptions] = await this.prisma.$transaction([
-      this.prisma.appointment.findMany({
-        where: { doctorId: doctor.id, patientId: patient.id },
-        orderBy: { scheduledStartAt: 'desc' },
-        take: 10,
-      }),
-      this.prisma.medicalRecord.findMany({
-        where: { doctorId: doctor.id, patientId: patient.id },
-        orderBy: { recordDate: 'desc' },
-        take: 10,
-      }),
-      this.prisma.prescription.findMany({
-        where: { doctorId: doctor.id, patientId: patient.id },
-        orderBy: { createdAt: 'desc' },
-        take: 10,
-      }),
-    ]);
+    const [appointments, medicalRecords, prescriptions] =
+      await this.prisma.$transaction([
+        this.prisma.appointment.findMany({
+          where: { doctorId: doctor.id, patientId: patient.id },
+          orderBy: { scheduledStartAt: 'desc' },
+          take: 10,
+        }),
+        this.prisma.medicalRecord.findMany({
+          where: { doctorId: doctor.id, patientId: patient.id },
+          orderBy: { recordDate: 'desc' },
+          take: 10,
+        }),
+        this.prisma.prescription.findMany({
+          where: { doctorId: doctor.id, patientId: patient.id },
+          orderBy: { createdAt: 'desc' },
+          take: 10,
+        }),
+      ]);
 
     return {
       patient: {
@@ -738,7 +819,9 @@ export class DoctorsService {
         phone: patient.user.phone,
         location: patient.user.location,
         gender: patient.gender,
-        dateOfBirth: patient.dateOfBirth ? this.formatDate(patient.dateOfBirth) : null,
+        dateOfBirth: patient.dateOfBirth
+          ? this.formatDate(patient.dateOfBirth)
+          : null,
         bloodGroup: patient.bloodGroup,
         address: patient.address,
         emergencyContactName: patient.emergencyContactName,
@@ -757,9 +840,16 @@ export class DoctorsService {
     };
   }
 
-  async createDoctorMedicalRecord(user: AuthUser, dto: DoctorCreateMedicalRecordDto) {
+  async createDoctorMedicalRecord(
+    user: AuthUser,
+    dto: DoctorCreateMedicalRecordDto,
+  ) {
     const doctor = await this.getCurrentDoctorProfile(user);
-    await this.assertDoctorPatientAccess(doctor.id, dto.patientId, dto.appointmentId);
+    await this.assertDoctorPatientAccess(
+      doctor.id,
+      dto.patientId,
+      dto.appointmentId,
+    );
 
     return this.prisma.medicalRecord.create({
       data: {
@@ -786,7 +876,13 @@ export class DoctorsService {
         ? {
             OR: [
               { title: { contains: query.search, mode: 'insensitive' } },
-              { patient: { user: { name: { contains: query.search, mode: 'insensitive' } } } },
+              {
+                patient: {
+                  user: {
+                    name: { contains: query.search, mode: 'insensitive' },
+                  },
+                },
+              },
             ],
           }
         : {}),
@@ -822,7 +918,11 @@ export class DoctorsService {
     return record;
   }
 
-  async updateDoctorMedicalRecord(user: AuthUser, id: string, dto: DoctorUpdateMedicalRecordDto) {
+  async updateDoctorMedicalRecord(
+    user: AuthUser,
+    id: string,
+    dto: DoctorUpdateMedicalRecordDto,
+  ) {
     const doctor = await this.getCurrentDoctorProfile(user);
     const record = await this.prisma.medicalRecord.findFirst({
       where: { id, doctorId: doctor.id },
@@ -850,14 +950,21 @@ export class DoctorsService {
     });
   }
 
-  async createDoctorPrescription(user: AuthUser, dto: DoctorCreatePrescriptionDto) {
+  async createDoctorPrescription(
+    user: AuthUser,
+    dto: DoctorCreatePrescriptionDto,
+  ) {
     const doctor = await this.getCurrentDoctorProfile(user);
-    const appointment = await this.prisma.appointment.findUnique({ where: { id: dto.appointmentId } });
+    const appointment = await this.prisma.appointment.findUnique({
+      where: { id: dto.appointmentId },
+    });
     if (!appointment || appointment.doctorId !== doctor.id) {
       throw new NotFoundException('Appointment not found.');
     }
     if (appointment.status !== AppointmentStatus.COMPLETED) {
-      throw new BadRequestException('Prescription can only be created for completed appointments.');
+      throw new BadRequestException(
+        'Prescription can only be created for completed appointments.',
+      );
     }
 
     return this.prisma.prescription.create({
@@ -873,7 +980,10 @@ export class DoctorsService {
     });
   }
 
-  async getDoctorPrescriptions(user: AuthUser, query: DoctorPrescriptionsQueryDto) {
+  async getDoctorPrescriptions(
+    user: AuthUser,
+    query: DoctorPrescriptionsQueryDto,
+  ) {
     const doctor = await this.getCurrentDoctorProfile(user);
     const { skip, take } = buildPagination(query);
 
@@ -885,7 +995,13 @@ export class DoctorsService {
         ? {
             OR: [
               { diagnosis: { contains: query.search, mode: 'insensitive' } },
-              { patient: { user: { name: { contains: query.search, mode: 'insensitive' } } } },
+              {
+                patient: {
+                  user: {
+                    name: { contains: query.search, mode: 'insensitive' },
+                  },
+                },
+              },
             ],
           }
         : {}),
@@ -921,7 +1037,11 @@ export class DoctorsService {
     return prescription;
   }
 
-  async updateDoctorPrescription(user: AuthUser, id: string, dto: DoctorUpdatePrescriptionDto) {
+  async updateDoctorPrescription(
+    user: AuthUser,
+    id: string,
+    dto: DoctorUpdatePrescriptionDto,
+  ) {
     const doctor = await this.getCurrentDoctorProfile(user);
     const prescription = await this.prisma.prescription.findFirst({
       where: { id, doctorId: doctor.id },
@@ -929,7 +1049,9 @@ export class DoctorsService {
     if (!prescription) throw new NotFoundException('Prescription not found.');
 
     if (dto.appointmentId && dto.appointmentId !== prescription.appointmentId) {
-      throw new BadRequestException('Appointment cannot be changed for an existing prescription.');
+      throw new BadRequestException(
+        'Appointment cannot be changed for an existing prescription.',
+      );
     }
 
     return this.prisma.prescription.update({
@@ -951,26 +1073,31 @@ export class DoctorsService {
       ...(query.dateFrom || query.dateTo
         ? {
             paidAt: {
-              ...(query.dateFrom ? { gte: this.startOfDay(query.dateFrom) } : {}),
-              ...(query.dateTo ? { lt: this.endOfDayExclusive(query.dateTo) } : {}),
+              ...(query.dateFrom
+                ? { gte: this.startOfDay(query.dateFrom) }
+                : {}),
+              ...(query.dateTo
+                ? { lt: this.endOfDayExclusive(query.dateTo) }
+                : {}),
             },
           }
         : {}),
     };
 
-    const [aggregate, paymentsCount, recentPayments] = await this.prisma.$transaction([
-      this.prisma.payment.aggregate({
-        where: paidWhere,
-        _sum: { amount: true },
-      }),
-      this.prisma.payment.count({ where: paidWhere }),
-      this.prisma.payment.findMany({
-        where: paidWhere,
-        include: { appointment: true },
-        orderBy: { paidAt: 'desc' },
-        take: 10,
-      }),
-    ]);
+    const [aggregate, paymentsCount, recentPayments] =
+      await this.prisma.$transaction([
+        this.prisma.payment.aggregate({
+          where: paidWhere,
+          _sum: { amount: true },
+        }),
+        this.prisma.payment.count({ where: paidWhere }),
+        this.prisma.payment.findMany({
+          where: paidWhere,
+          include: { appointment: true },
+          orderBy: { paidAt: 'desc' },
+          take: 10,
+        }),
+      ]);
 
     return {
       summary: {
@@ -979,7 +1106,9 @@ export class DoctorsService {
         dateFrom: query.dateFrom ?? null,
         dateTo: query.dateTo ?? null,
       },
-      recentPayments: recentPayments.map((payment) => this.mapDoctorPayment(payment)),
+      recentPayments: recentPayments.map((payment) =>
+        this.mapDoctorPayment(payment),
+      ),
     };
   }
 
@@ -1026,7 +1155,8 @@ export class DoctorsService {
         clinic: true,
       },
     });
-    if (!doctor) throw new NotFoundException('Doctor profile not found for current user.');
+    if (!doctor)
+      throw new NotFoundException('Doctor profile not found for current user.');
     return doctor;
   }
 
@@ -1043,7 +1173,9 @@ export class DoctorsService {
       },
     });
     if (!appointment) {
-      throw new ForbiddenException('You do not have access to this patient record.');
+      throw new ForbiddenException(
+        'You do not have access to this patient record.',
+      );
     }
   }
 
@@ -1157,7 +1289,9 @@ export class DoctorsService {
   }
 
   private startOfDayFromDate(date: Date) {
-    return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
+    return new Date(
+      Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()),
+    );
   }
 
   private endOfDayExclusiveFromDate(date: Date) {

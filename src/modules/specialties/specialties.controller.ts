@@ -1,9 +1,22 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { UserRole } from '@prisma/client';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { Public } from '../../common/decorators/public.decorator';
-import { CreateSpecialtyDto, SpecialtiesQueryDto, UpdateSpecialtyDto } from './dto/specialties.dto';
+import {
+  CreateSpecialtyDto,
+  SpecialtiesQueryDto,
+  UpdateSpecialtyDto,
+} from './dto/specialties.dto';
 import { SpecialtiesService } from './specialties.service';
 
 @ApiTags('Specialties')

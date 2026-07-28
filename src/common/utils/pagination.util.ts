@@ -12,7 +12,11 @@ export const buildPagination = (query: PaginationQueryDto) => {
   };
 };
 
-export const buildPaginatedResponse = <T>(data: T[], total: number, query: PaginationQueryDto) => {
+export const buildPaginatedResponse = <T>(
+  data: T[],
+  total: number,
+  query: PaginationQueryDto,
+) => {
   const page = query.page ?? 1;
   const limit = query.limit ?? 10;
 

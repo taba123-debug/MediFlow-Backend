@@ -27,7 +27,11 @@ export class PatientsController {
 
   @Patch(':id')
   @ApiOperation({ summary: 'Update patient profile' })
-  update(@Param('id') id: string, @Body() dto: UpdatePatientProfileDto, @CurrentUser() user: any) {
+  update(
+    @Param('id') id: string,
+    @Body() dto: UpdatePatientProfileDto,
+    @CurrentUser() user: any,
+  ) {
     return this.patientsService.update(id, dto, user);
   }
 }

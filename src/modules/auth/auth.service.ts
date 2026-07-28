@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -10,7 +9,11 @@ import { Prisma, UserRole } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuthUser } from '../../common/interfaces/auth-user.interface';
-import { LoginDto, RegisterDoctorDto, RegisterPatientDto } from './dto/auth.dto';
+import {
+  LoginDto,
+  RegisterDoctorDto,
+  RegisterPatientDto,
+} from './dto/auth.dto';
 
 @Injectable()
 export class AuthService {
@@ -34,7 +37,9 @@ export class AuthService {
         status: 'ACTIVE',
         patientProfile: {
           create: {
-            dateOfBirth: dto.dateOfBirth ? new Date(dto.dateOfBirth) : undefined,
+            dateOfBirth: dto.dateOfBirth
+              ? new Date(dto.dateOfBirth)
+              : undefined,
             gender: dto.gender,
             bloodGroup: dto.bloodGroup,
             address: dto.address,
@@ -52,11 +57,15 @@ export class AuthService {
   }
 
   async registerDoctor(dto: RegisterDoctorDto) {
-    const specialty = await this.prisma.specialty.findUnique({ where: { id: dto.specialtyId } });
+    const specialty = await this.prisma.specialty.findUnique({
+      where: { id: dto.specialtyId },
+    });
     if (!specialty) throw new NotFoundException('Specialty not found.');
 
     if (dto.clinicId) {
-      const clinic = await this.prisma.clinic.findUnique({ where: { id: dto.clinicId } });
+      const clinic = await this.prisma.clinic.findUnique({
+        where: { id: dto.clinicId },
+      });
       if (!clinic) throw new NotFoundException('Clinic not found.');
     }
 
@@ -102,7 +111,10 @@ export class AuthService {
       throw new UnauthorizedException('Invalid email or password');
     }
 
-    const isValidPassword = await bcrypt.compare(dto.password, user.passwordHash);
+    const isValidPassword = await bcrypt.compare(
+      dto.password,
+      user.passwordHash,
+    );
     if (!isValidPassword) {
       throw new UnauthorizedException('Invalid email or password');
     }
@@ -111,11 +123,16 @@ export class AuthService {
   }
 
   async refresh(refreshToken: string) {
-    const payload = await this.jwtService.verifyAsync<{ sub: string; email: string; role: UserRole }>(
-      refreshToken,
-      { secret: this.configService.get<string>('auth.refreshSecret') },
-    );
-    const user = await this.prisma.user.findUnique({ where: { id: payload.sub } });
+    const payload = await this.jwtService.verifyAsync<{
+      sub: string;
+      email: string;
+      role: UserRole;
+    }>(refreshToken, {
+      secret: this.configService.get<string>('auth.refreshSecret'),
+    });
+    const user = await this.prisma.user.findUnique({
+      where: { id: payload.sub },
+    });
 
     if (!user?.refreshTokenHash) {
       throw new UnauthorizedException('Invalid refresh token');
@@ -161,11 +178,15 @@ export class AuthService {
     const payload = { sub: userId, email, role };
     const accessToken = await this.jwtService.signAsync(payload, {
       secret: this.configService.getOrThrow<string>('auth.accessSecret'),
-      expiresIn: this.configService.getOrThrow<string>('auth.accessExpiresIn') as never,
+      expiresIn: this.configService.getOrThrow<string>(
+        'auth.accessExpiresIn',
+      ) as never,
     });
     const refreshToken = await this.jwtService.signAsync(payload, {
       secret: this.configService.getOrThrow<string>('auth.refreshSecret'),
-      expiresIn: this.configService.getOrThrow<string>('auth.refreshExpiresIn') as never,
+      expiresIn: this.configService.getOrThrow<string>(
+        'auth.refreshExpiresIn',
+      ) as never,
     });
 
     await this.prisma.user.update({

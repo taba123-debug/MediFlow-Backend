@@ -31,12 +31,18 @@ async function bootstrap() {
 
     const swaggerConfig = new DocumentBuilder()
       .setTitle('Doctor Booking Management API')
-      .setDescription('Production-ready backend APIs for the doctor booking management system.')
+      .setDescription(
+        'Production-ready backend APIs for the doctor booking management system.',
+      )
       .setVersion('1.0.0')
       .addBearerAuth()
       .build();
     const document = SwaggerModule.createDocument(app, swaggerConfig);
-    SwaggerModule.setup(configService.get<string>('app.swaggerPath') ?? 'docs', app, document);
+    SwaggerModule.setup(
+      configService.get<string>('app.swaggerPath') ?? 'docs',
+      app,
+      document,
+    );
     const port = configService.get<number>('app.port') ?? 4000;
     console.log('Listening on port', port);
     await app.listen(port);
@@ -45,4 +51,4 @@ async function bootstrap() {
     console.error('Error:', e);
   }
 }
-bootstrap().catch(e => console.error('Bootstrap error:', e));
+bootstrap().catch((e) => console.error('Bootstrap error:', e));

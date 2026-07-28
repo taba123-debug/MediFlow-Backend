@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import {
@@ -36,19 +44,33 @@ export class AppointmentsController {
 
   @Patch(':id')
   @ApiOperation({ summary: 'Update appointment notes' })
-  update(@Param('id') id: string, @Body() dto: UpdateAppointmentDto, @CurrentUser() user: any) {
+  update(
+    @Param('id') id: string,
+    @Body() dto: UpdateAppointmentDto,
+    @CurrentUser() user: any,
+  ) {
     return this.appointmentsService.update(id, dto, user);
   }
 
   @Patch(':id/status')
   @ApiOperation({ summary: 'Change appointment status' })
-  changeStatus(@Param('id') id: string, @Body() dto: ChangeAppointmentStatusDto, @CurrentUser() user: any) {
+  changeStatus(
+    @Param('id') id: string,
+    @Body() dto: ChangeAppointmentStatusDto,
+    @CurrentUser() user: any,
+  ) {
     return this.appointmentsService.changeStatus(id, dto, user);
   }
 
   @Patch(':id/reschedule')
-  @ApiOperation({ summary: 'Reschedule an appointment to another available slot' })
-  reschedule(@Param('id') id: string, @Body() dto: RescheduleAppointmentDto, @CurrentUser() user: any) {
+  @ApiOperation({
+    summary: 'Reschedule an appointment to another available slot',
+  })
+  reschedule(
+    @Param('id') id: string,
+    @Body() dto: RescheduleAppointmentDto,
+    @CurrentUser() user: any,
+  ) {
     return this.appointmentsService.reschedule(id, dto, user);
   }
 }

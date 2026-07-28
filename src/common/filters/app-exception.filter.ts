@@ -6,12 +6,13 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
+import { Response } from 'express';
 
 @Catch()
 export class AppExceptionFilter implements ExceptionFilter {
   catch(exception: unknown, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
-    const response = ctx.getResponse();
+    const response = ctx.getResponse<Response>();
 
     if (exception instanceof Prisma.PrismaClientKnownRequestError) {
       const payload = this.buildPrismaErrorPayload(exception);
@@ -43,7 +44,7 @@ export class AppExceptionFilter implements ExceptionFilter {
     }
 
     if (this.isObject(rawResponse)) {
-      const responseObject = rawResponse as Record<string, unknown>;
+      const responseObject = rawResponse;
       const message = this.normalizeMessage(responseObject.message, statusCode);
       const errors = this.isObject(responseObject.errors)
         ? (responseObject.errors as Record<string, string[]>)
@@ -62,7 +63,9 @@ export class AppExceptionFilter implements ExceptionFilter {
     };
   }
 
-  private buildPrismaErrorPayload(exception: Prisma.PrismaClientKnownRequestError) {
+  private buildPrismaErrorPayload(
+    exception: Prisma.PrismaClientKnownRequestError,
+  ) {
     switch (exception.code) {
       case 'P2002': {
         const target = Array.isArray(exception.meta?.target)
@@ -113,20 +116,12 @@ export class AppExceptionFilter implements ExceptionFilter {
   }
 
   private defaultMessageForStatus(statusCode: number) {
-    switch (statusCode) {
-      case HttpStatus.BAD_REQUEST:
-        return 'Bad request';
-      case HttpStatus.UNAUTHORIZED:
-        return 'Unauthorized';
-      case HttpStatus.FORBIDDEN:
-        return 'Forbidden';
-      case HttpStatus.NOT_FOUND:
-        return 'Not found';
-      case HttpStatus.CONFLICT:
-        return 'Conflict';
-      default:
-        return 'Request failed';
-    }
+    if (statusCode === HttpStatus.BAD_REQUEST) return 'Bad request';
+    if (statusCode === HttpStatus.UNAUTHORIZED) return 'Unauthorized';
+    if (statusCode === HttpStatus.FORBIDDEN) return 'Forbidden';
+    if (statusCode === HttpStatus.NOT_FOUND) return 'Not found';
+    if (statusCode === HttpStatus.CONFLICT) return 'Conflict';
+    return 'Request failed';
   }
 
   private toLabel(value: string) {

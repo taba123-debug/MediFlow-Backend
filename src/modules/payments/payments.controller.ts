@@ -1,9 +1,21 @@
-import { Body, Controller, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { UserRole } from '@prisma/client';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
-import { CreatePaymentDto, PaymentsQueryDto, UpdatePaymentDto } from './dto/payments.dto';
+import {
+  CreatePaymentDto,
+  PaymentsQueryDto,
+  UpdatePaymentDto,
+} from './dto/payments.dto';
 import { PaymentsService } from './payments.service';
 
 @ApiTags('Payments')

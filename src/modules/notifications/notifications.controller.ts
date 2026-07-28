@@ -1,9 +1,22 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { UserRole } from '@prisma/client';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
-import { CreateNotificationDto, NotificationsQueryDto, UpdateNotificationDto } from './dto/notifications.dto';
+import {
+  CreateNotificationDto,
+  NotificationsQueryDto,
+  UpdateNotificationDto,
+} from './dto/notifications.dto';
 import { NotificationsService } from './notifications.service';
 
 @ApiTags('Notifications')
@@ -27,7 +40,11 @@ export class NotificationsController {
 
   @Patch(':id')
   @ApiOperation({ summary: 'Update notification status' })
-  update(@Param('id') id: string, @Body() dto: UpdateNotificationDto, @CurrentUser() user: any) {
+  update(
+    @Param('id') id: string,
+    @Body() dto: UpdateNotificationDto,
+    @CurrentUser() user: any,
+  ) {
     return this.notificationsService.update(id, dto, user);
   }
 

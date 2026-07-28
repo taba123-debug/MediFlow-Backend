@@ -1,7 +1,20 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
-import { CreateMedicalRecordDto, MedicalRecordsQueryDto, UpdateMedicalRecordDto } from './dto/medical-records.dto';
+import {
+  CreateMedicalRecordDto,
+  MedicalRecordsQueryDto,
+  UpdateMedicalRecordDto,
+} from './dto/medical-records.dto';
 import { MedicalRecordsService } from './medical-records.service';
 
 @ApiTags('Medical Records')
@@ -30,7 +43,11 @@ export class MedicalRecordsController {
 
   @Patch(':id')
   @ApiOperation({ summary: 'Update a medical record' })
-  update(@Param('id') id: string, @Body() dto: UpdateMedicalRecordDto, @CurrentUser() user: any) {
+  update(
+    @Param('id') id: string,
+    @Body() dto: UpdateMedicalRecordDto,
+    @CurrentUser() user: any,
+  ) {
     return this.medicalRecordsService.update(id, dto, user);
   }
 

@@ -1,7 +1,14 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
-import { buildPaginatedResponse, buildPagination } from '../../common/utils/pagination.util';
-import { ClinicsQueryDto, CreateClinicDto, UpdateClinicDto } from './dto/clinics.dto';
+import {
+  buildPaginatedResponse,
+  buildPagination,
+} from '../../common/utils/pagination.util';
+import {
+  ClinicsQueryDto,
+  CreateClinicDto,
+  UpdateClinicDto,
+} from './dto/clinics.dto';
 
 @Injectable()
 export class ClinicsService {
@@ -14,12 +21,18 @@ export class ClinicsService {
   async findAll(query: ClinicsQueryDto) {
     const { skip, take } = buildPagination(query);
     const where = {
-      ...(query.city ? { city: { contains: query.city, mode: 'insensitive' as const } } : {}),
+      ...(query.city
+        ? { city: { contains: query.city, mode: 'insensitive' as const } }
+        : {}),
       ...(query.search
         ? {
             OR: [
-              { name: { contains: query.search, mode: 'insensitive' as const } },
-              { city: { contains: query.search, mode: 'insensitive' as const } },
+              {
+                name: { contains: query.search, mode: 'insensitive' as const },
+              },
+              {
+                city: { contains: query.search, mode: 'insensitive' as const },
+              },
             ],
           }
         : {}),

@@ -1,8 +1,19 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuthUser } from '../../common/interfaces/auth-user.interface';
-import { buildPaginatedResponse, buildPagination } from '../../common/utils/pagination.util';
-import { UpdateUserDto, UpdateUserStatusDto, UsersQueryDto } from './dto/users.dto';
+import {
+  buildPaginatedResponse,
+  buildPagination,
+} from '../../common/utils/pagination.util';
+import {
+  UpdateUserDto,
+  UpdateUserStatusDto,
+  UsersQueryDto,
+} from './dto/users.dto';
 import { UserRole } from '@prisma/client';
 
 @Injectable()
@@ -17,8 +28,12 @@ export class UsersService {
       ...(query.search
         ? {
             OR: [
-              { name: { contains: query.search, mode: 'insensitive' as const } },
-              { email: { contains: query.search, mode: 'insensitive' as const } },
+              {
+                name: { contains: query.search, mode: 'insensitive' as const },
+              },
+              {
+                email: { contains: query.search, mode: 'insensitive' as const },
+              },
             ],
           }
         : {}),

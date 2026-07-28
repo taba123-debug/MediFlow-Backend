@@ -1,27 +1,47 @@
-import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { AppointmentStatus, UserRole } from '@prisma/client';
 import { AuthUser } from '../../common/interfaces/auth-user.interface';
-import { buildPaginatedResponse, buildPagination } from '../../common/utils/pagination.util';
+import {
+  buildPaginatedResponse,
+  buildPagination,
+} from '../../common/utils/pagination.util';
 import { PrismaService } from '../../prisma/prisma.service';
-import { CreateReviewDto, ReviewsQueryDto, UpdateReviewDto } from './dto/reviews.dto';
+import {
+  CreateReviewDto,
+  ReviewsQueryDto,
+  UpdateReviewDto,
+} from './dto/reviews.dto';
 
 @Injectable()
 export class ReviewsService {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(dto: CreateReviewDto, user: AuthUser) {
-    const patientProfile = await this.prisma.patientProfile.findFirst({ where: { userId: user.sub } });
+    const patientProfile = await this.prisma.patientProfile.findFirst({
+      where: { userId: user.sub },
+    });
     if (user.role !== UserRole.PATIENT || !patientProfile) {
       throw new ForbiddenException('Only patients can create reviews.');
     }
 
-    const appointment = await this.prisma.appointment.findUnique({ where: { id: dto.appointmentId } });
+    const appointment = await this.prisma.appointment.findUnique({
+      where: { id: dto.appointmentId },
+    });
     if (!appointment) throw new NotFoundException('Appointment not found.');
     if (appointment.patientId !== patientProfile.id) {
-      throw new ForbiddenException('Patients can only review their own appointments.');
+      throw new ForbiddenException(
+        'Patients can only review their own appointments.',
+      );
     }
     if (appointment.status !== AppointmentStatus.COMPLETED) {
-      throw new BadRequestException('Only completed appointments can be reviewed.');
+      throw new BadRequestException(
+        'Only completed appointments can be reviewed.',
+      );
     }
 
     const review = await this.prisma.review.create({
@@ -63,9 +83,16 @@ export class ReviewsService {
   async update(id: string, dto: UpdateReviewDto, user: AuthUser) {
     const review = await this.prisma.review.findUnique({ where: { id } });
     if (!review) throw new NotFoundException('Review not found.');
-    const patientProfile = await this.prisma.patientProfile.findFirst({ where: { userId: user.sub } });
-    if (user.role !== UserRole.ADMIN && (!patientProfile || patientProfile.id !== review.patientId)) {
-      throw new ForbiddenException('Only the reviewing patient or admin can update this review.');
+    const patientProfile = await this.prisma.patientProfile.findFirst({
+      where: { userId: user.sub },
+    });
+    if (
+      user.role !== UserRole.ADMIN &&
+      (!patientProfile || patientProfile.id !== review.patientId)
+    ) {
+      throw new ForbiddenException(
+        'Only the reviewing patient or admin can update this review.',
+      );
     }
 
     const updated = await this.prisma.review.update({
@@ -83,9 +110,16 @@ export class ReviewsService {
   async remove(id: string, user: AuthUser) {
     const review = await this.prisma.review.findUnique({ where: { id } });
     if (!review) throw new NotFoundException('Review not found.');
-    const patientProfile = await this.prisma.patientProfile.findFirst({ where: { userId: user.sub } });
-    if (user.role !== UserRole.ADMIN && (!patientProfile || patientProfile.id !== review.patientId)) {
-      throw new ForbiddenException('Only the reviewing patient or admin can delete this review.');
+    const patientProfile = await this.prisma.patientProfile.findFirst({
+      where: { userId: user.sub },
+    });
+    if (
+      user.role !== UserRole.ADMIN &&
+      (!patientProfile || patientProfile.id !== review.patientId)
+    ) {
+      throw new ForbiddenException(
+        'Only the reviewing patient or admin can delete this review.',
+      );
     }
 
     await this.prisma.review.delete({ where: { id } });

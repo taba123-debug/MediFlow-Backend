@@ -47,9 +47,13 @@ export class UpdatePatientProfileDto {
   emergencyContactPhone?: string;
 }
 
-export class PatientSelfUpdateDto extends PartialType(UpdatePatientProfileDto) {}
+export class PatientSelfUpdateDto extends PartialType(
+  UpdatePatientProfileDto,
+) {}
 
-export class PatientProfileUpdateDto extends PartialType(UpdatePatientProfileDto) {
+export class PatientProfileUpdateDto extends PartialType(
+  UpdatePatientProfileDto,
+) {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
@@ -66,7 +70,9 @@ export class PatientProfileUpdateDto extends PartialType(UpdatePatientProfileDto
   location?: string;
 
   @ApiPropertyOptional()
-  @Transform(({ value }) => (value === null ? undefined : value))
+  @Transform(({ value }: { value: unknown }) =>
+    value === null ? undefined : value,
+  )
   @IsOptional()
   @IsString()
   avatarUrl?: string | null;

@@ -1,9 +1,21 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { UserRole } from '@prisma/client';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
-import { CreateAppointmentDto, RescheduleAppointmentDto } from '../appointments/dto/appointments.dto';
+import {
+  CreateAppointmentDto,
+  RescheduleAppointmentDto,
+} from '../appointments/dto/appointments.dto';
 import { CreateReviewDto, UpdateReviewDto } from '../reviews/dto/reviews.dto';
 import {
   CancelPatientAppointmentDto,
@@ -38,7 +50,10 @@ export class PatientPortalController {
 
   @Patch('profile')
   @ApiOperation({ summary: 'Update the current patient profile' })
-  updateProfile(@Body() dto: PatientProfileUpdateDto, @CurrentUser() user: any) {
+  updateProfile(
+    @Body() dto: PatientProfileUpdateDto,
+    @CurrentUser() user: any,
+  ) {
     return this.patientsService.updateProfile(user, dto);
   }
 
@@ -50,7 +65,10 @@ export class PatientPortalController {
 
   @Get('doctors/:doctorId/slots')
   @ApiOperation({ summary: 'Get a doctor availability slots for a date' })
-  getDoctorSlots(@Param('doctorId') doctorId: string, @Query() query: PatientDoctorSlotsQueryDto) {
+  getDoctorSlots(
+    @Param('doctorId') doctorId: string,
+    @Query() query: PatientDoctorSlotsQueryDto,
+  ) {
     return this.patientsService.getDoctorSlots(doctorId, query);
   }
 
@@ -62,13 +80,19 @@ export class PatientPortalController {
 
   @Post('appointments')
   @ApiOperation({ summary: 'Create a patient appointment' })
-  createAppointment(@Body() dto: CreateAppointmentDto, @CurrentUser() user: any) {
+  createAppointment(
+    @Body() dto: CreateAppointmentDto,
+    @CurrentUser() user: any,
+  ) {
     return this.patientsService.createAppointment(user, dto);
   }
 
   @Get('appointments')
   @ApiOperation({ summary: 'List patient appointments' })
-  getAppointments(@Query() query: PatientAppointmentsQueryDto, @CurrentUser() user: any) {
+  getAppointments(
+    @Query() query: PatientAppointmentsQueryDto,
+    @CurrentUser() user: any,
+  ) {
     return this.patientsService.getAppointments(user, query);
   }
 
@@ -100,7 +124,10 @@ export class PatientPortalController {
 
   @Get('medical-records')
   @ApiOperation({ summary: 'List patient medical records' })
-  getMedicalRecords(@Query() query: PatientAppointmentsQueryDto, @CurrentUser() user: any) {
+  getMedicalRecords(
+    @Query() query: PatientAppointmentsQueryDto,
+    @CurrentUser() user: any,
+  ) {
     return this.patientsService.getMedicalRecords(user, query);
   }
 
@@ -112,7 +139,10 @@ export class PatientPortalController {
 
   @Get('reviews')
   @ApiOperation({ summary: 'List patient reviews' })
-  getReviews(@Query() query: PatientAppointmentsQueryDto, @CurrentUser() user: any) {
+  getReviews(
+    @Query() query: PatientAppointmentsQueryDto,
+    @CurrentUser() user: any,
+  ) {
     return this.patientsService.getReviews(user, query);
   }
 
@@ -124,7 +154,11 @@ export class PatientPortalController {
 
   @Patch('reviews/:id')
   @ApiOperation({ summary: 'Update a patient review' })
-  updateReview(@Param('id') id: string, @Body() dto: UpdateReviewDto, @CurrentUser() user: any) {
+  updateReview(
+    @Param('id') id: string,
+    @Body() dto: UpdateReviewDto,
+    @CurrentUser() user: any,
+  ) {
     return this.patientsService.updateReview(user, id, dto);
   }
 
@@ -136,7 +170,10 @@ export class PatientPortalController {
 
   @Get('notifications')
   @ApiOperation({ summary: 'List patient notifications' })
-  getNotifications(@Query() query: PatientNotificationsQueryDto, @CurrentUser() user: any) {
+  getNotifications(
+    @Query() query: PatientNotificationsQueryDto,
+    @CurrentUser() user: any,
+  ) {
     return this.patientsService.getNotifications(user, query);
   }
 
@@ -158,7 +195,10 @@ export class PatientPortalController {
 
   @Get('payments')
   @ApiOperation({ summary: 'List patient payments' })
-  getPayments(@Query() query: PatientPaymentsQueryDto, @CurrentUser() user: any) {
+  getPayments(
+    @Query() query: PatientPaymentsQueryDto,
+    @CurrentUser() user: any,
+  ) {
     return this.patientsService.getPayments(user, query);
   }
 

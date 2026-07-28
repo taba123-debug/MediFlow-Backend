@@ -1,9 +1,22 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { UserRole } from '@prisma/client';
 import { Public } from '../../common/decorators/public.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
-import { ClinicsQueryDto, CreateClinicDto, UpdateClinicDto } from './dto/clinics.dto';
+import {
+  ClinicsQueryDto,
+  CreateClinicDto,
+  UpdateClinicDto,
+} from './dto/clinics.dto';
 import { ClinicsService } from './clinics.service';
 
 @ApiTags('Clinics')

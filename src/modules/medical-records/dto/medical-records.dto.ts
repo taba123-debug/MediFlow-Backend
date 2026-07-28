@@ -42,4 +42,6 @@ export class CreateMedicalRecordDto {
   recordDate: string;
 }
 
-export class UpdateMedicalRecordDto extends PartialType(CreateMedicalRecordDto) {}
+export class UpdateMedicalRecordDto extends PartialType(
+  CreateMedicalRecordDto,
+) {}

@@ -2,7 +2,9 @@ import { BadRequestException, ValidationError } from '@nestjs/common';
 
 type ValidationErrorsMap = Record<string, string[]>;
 
-export const buildValidationException = (validationErrors: ValidationError[]) => {
+export const buildValidationException = (
+  validationErrors: ValidationError[],
+) => {
   const errors = flattenValidationErrors(validationErrors);
 
   return new BadRequestException({
@@ -17,7 +19,9 @@ const flattenValidationErrors = (
   parentPath?: string,
 ): ValidationErrorsMap => {
   return validationErrors.reduce<ValidationErrorsMap>((acc, error) => {
-    const path = parentPath ? `${parentPath}.${error.property}` : error.property;
+    const path = parentPath
+      ? `${parentPath}.${error.property}`
+      : error.property;
 
     if (error.constraints) {
       acc[path] = Object.values(error.constraints);

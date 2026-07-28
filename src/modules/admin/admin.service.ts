@@ -21,8 +21,12 @@ export class AdminService {
       this.prisma.doctorProfile.count(),
       this.prisma.patientProfile.count(),
       this.prisma.appointment.count(),
-      this.prisma.appointment.count({ where: { status: AppointmentStatus.PENDING } }),
-      this.prisma.appointment.count({ where: { status: AppointmentStatus.COMPLETED } }),
+      this.prisma.appointment.count({
+        where: { status: AppointmentStatus.PENDING },
+      }),
+      this.prisma.appointment.count({
+        where: { status: AppointmentStatus.COMPLETED },
+      }),
       this.prisma.payment.count({ where: { status: PaymentStatus.PAID } }),
       this.prisma.notification.count({ where: { isRead: false } }),
     ]);

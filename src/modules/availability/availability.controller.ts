@@ -1,4 +1,13 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { UserRole } from '@prisma/client';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
@@ -41,7 +50,11 @@ export class AvailabilityController {
   @Roles(UserRole.ADMIN, UserRole.DOCTOR)
   @Patch(':id')
   @ApiOperation({ summary: 'Update availability' })
-  updateAvailability(@Param('id') id: string, @Body() dto: UpdateAvailabilityDto, @CurrentUser() user: any) {
+  updateAvailability(
+    @Param('id') id: string,
+    @Body() dto: UpdateAvailabilityDto,
+    @CurrentUser() user: any,
+  ) {
     return this.availabilityService.updateAvailability(id, dto, user);
   }
 

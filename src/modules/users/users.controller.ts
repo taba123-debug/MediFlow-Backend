@@ -3,7 +3,11 @@ import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { UserRole } from '@prisma/client';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
-import { UpdateUserDto, UpdateUserStatusDto, UsersQueryDto } from './dto/users.dto';
+import {
+  UpdateUserDto,
+  UpdateUserStatusDto,
+  UsersQueryDto,
+} from './dto/users.dto';
 import { UsersService } from './users.service';
 
 @ApiTags('Users')
@@ -27,7 +31,11 @@ export class UsersController {
 
   @Patch(':id')
   @ApiOperation({ summary: 'Update a user' })
-  update(@Param('id') id: string, @Body() dto: UpdateUserDto, @CurrentUser() user: any) {
+  update(
+    @Param('id') id: string,
+    @Body() dto: UpdateUserDto,
+    @CurrentUser() user: any,
+  ) {
     return this.usersService.update(id, dto, user);
   }
 

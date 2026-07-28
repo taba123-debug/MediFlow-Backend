@@ -1,7 +1,14 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { UserRole } from '@prisma/client';
 import { AuthUser } from '../../common/interfaces/auth-user.interface';
-import { buildPaginatedResponse, buildPagination } from '../../common/utils/pagination.util';
+import {
+  buildPaginatedResponse,
+  buildPagination,
+} from '../../common/utils/pagination.util';
 import { PrismaService } from '../../prisma/prisma.service';
 import {
   AvailabilityQueryDto,
@@ -15,7 +22,11 @@ import {
 export class AvailabilityService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async createAvailability(doctorId: string, dto: CreateAvailabilityDto, user: AuthUser) {
+  async createAvailability(
+    doctorId: string,
+    dto: CreateAvailabilityDto,
+    user: AuthUser,
+  ) {
     await this.assertDoctorAccess(doctorId, user);
     return this.prisma.doctorAvailability.create({
       data: {
@@ -42,8 +53,14 @@ export class AvailabilityService {
     return buildPaginatedResponse(data, total, query);
   }
 
-  async updateAvailability(id: string, dto: UpdateAvailabilityDto, user: AuthUser) {
-    const availability = await this.prisma.doctorAvailability.findUnique({ where: { id } });
+  async updateAvailability(
+    id: string,
+    dto: UpdateAvailabilityDto,
+    user: AuthUser,
+  ) {
+    const availability = await this.prisma.doctorAvailability.findUnique({
+      where: { id },
+    });
     if (!availability) throw new NotFoundException('Availability not found.');
     await this.assertDoctorAccess(availability.doctorId, user);
 
@@ -54,7 +71,9 @@ export class AvailabilityService {
   }
 
   async removeAvailability(id: string, user: AuthUser) {
-    const availability = await this.prisma.doctorAvailability.findUnique({ where: { id } });
+    const availability = await this.prisma.doctorAvailability.findUnique({
+      where: { id },
+    });
     if (!availability) throw new NotFoundException('Availability not found.');
     await this.assertDoctorAccess(availability.doctorId, user);
 
@@ -88,7 +107,9 @@ export class AvailabilityService {
         where,
         skip,
         take,
-        include: { doctor: { include: { user: true, specialty: true, clinic: true } } },
+        include: {
+          doctor: { include: { user: true, specialty: true, clinic: true } },
+        },
         orderBy: { startAt: 'asc' },
       }),
       this.prisma.doctorTimeSlot.count({ where }),
@@ -112,11 +133,15 @@ export class AvailabilityService {
   private async assertDoctorAccess(doctorId: string, user: AuthUser) {
     if (user.role === UserRole.ADMIN) return;
 
-    const doctor = await this.prisma.doctorProfile.findUnique({ where: { id: doctorId } });
+    const doctor = await this.prisma.doctorProfile.findUnique({
+      where: { id: doctorId },
+    });
     if (!doctor) throw new NotFoundException('Doctor profile not found.');
 
     if (user.role !== UserRole.DOCTOR || doctor.userId !== user.sub) {
-      throw new ForbiddenException('You can only manage your own availability.');
+      throw new ForbiddenException(
+        'You can only manage your own availability.',
+      );
     }
   }
 }

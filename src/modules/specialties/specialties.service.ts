@@ -1,7 +1,14 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
-import { buildPaginatedResponse, buildPagination } from '../../common/utils/pagination.util';
-import { CreateSpecialtyDto, SpecialtiesQueryDto, UpdateSpecialtyDto } from './dto/specialties.dto';
+import {
+  buildPaginatedResponse,
+  buildPagination,
+} from '../../common/utils/pagination.util';
+import {
+  CreateSpecialtyDto,
+  SpecialtiesQueryDto,
+  UpdateSpecialtyDto,
+} from './dto/specialties.dto';
 
 @Injectable()
 export class SpecialtiesService {

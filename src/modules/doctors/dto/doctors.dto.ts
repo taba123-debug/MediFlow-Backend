@@ -86,9 +86,13 @@ export class UpdateDoctorProfileDto {
   isVerified?: boolean;
 }
 
-export class AdminUpdateDoctorProfileDto extends PartialType(UpdateDoctorProfileDto) {}
+export class AdminUpdateDoctorProfileDto extends PartialType(
+  UpdateDoctorProfileDto,
+) {}
 
-export class DoctorProfileUpdateDto extends PartialType(UpdateDoctorProfileDto) {
+export class DoctorProfileUpdateDto extends PartialType(
+  UpdateDoctorProfileDto,
+) {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
@@ -105,7 +109,9 @@ export class DoctorProfileUpdateDto extends PartialType(UpdateDoctorProfileDto) 
   location?: string;
 
   @ApiPropertyOptional()
-  @Transform(({ value }) => (value === null ? undefined : value))
+  @Transform(({ value }: { value: unknown }) =>
+    value === null ? undefined : value,
+  )
   @IsOptional()
   @IsString()
   avatarUrl?: string | null;
@@ -233,7 +239,9 @@ export class DoctorCreateMedicalRecordDto {
   recordDate: string;
 }
 
-export class DoctorUpdateMedicalRecordDto extends PartialType(DoctorCreateMedicalRecordDto) {}
+export class DoctorUpdateMedicalRecordDto extends PartialType(
+  DoctorCreateMedicalRecordDto,
+) {}
 
 export class DoctorCreatePrescriptionDto {
   @ApiProperty()
@@ -260,4 +268,6 @@ export class DoctorCreatePrescriptionDto {
   followUpDate?: string;
 }
 
-export class DoctorUpdatePrescriptionDto extends PartialType(DoctorCreatePrescriptionDto) {}
+export class DoctorUpdatePrescriptionDto extends PartialType(
+  DoctorCreatePrescriptionDto,
+) {}

@@ -6,7 +6,8 @@ import { PrismaClient } from '@prisma/client';
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit {
   constructor(configService: ConfigService) {
-    const connectionString = configService.get<string>('DATABASE_URL') ?? process.env.DATABASE_URL;
+    const connectionString =
+      configService.get<string>('DATABASE_URL') ?? process.env.DATABASE_URL;
 
     super({
       adapter: new PrismaPg(connectionString ?? ''),

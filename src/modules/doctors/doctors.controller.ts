@@ -30,7 +30,11 @@ export class DoctorsController {
   @Roles(UserRole.ADMIN, UserRole.DOCTOR)
   @Patch(':id')
   @ApiOperation({ summary: 'Update doctor profile' })
-  update(@Param('id') id: string, @Body() dto: UpdateDoctorProfileDto, @CurrentUser() user: any) {
+  update(
+    @Param('id') id: string,
+    @Body() dto: UpdateDoctorProfileDto,
+    @CurrentUser() user: any,
+  ) {
     return this.doctorsService.update(id, dto, user);
   }
 }

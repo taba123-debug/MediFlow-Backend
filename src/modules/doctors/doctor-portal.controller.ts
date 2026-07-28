@@ -1,10 +1,25 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { UserRole } from '@prisma/client';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
-import { ChangeAppointmentStatusDto, RescheduleAppointmentDto } from '../appointments/dto/appointments.dto';
-import { CreateAvailabilityDto, UpdateAvailabilityDto } from '../availability/dto/availability.dto';
+import {
+  ChangeAppointmentStatusDto,
+  RescheduleAppointmentDto,
+} from '../appointments/dto/appointments.dto';
+import {
+  CreateAvailabilityDto,
+  UpdateAvailabilityDto,
+} from '../availability/dto/availability.dto';
 import {
   DoctorAppointmentsQueryDto,
   DoctorCreateMedicalRecordDto,
@@ -49,19 +64,29 @@ export class DoctorPortalController {
 
   @Get('availability')
   @ApiOperation({ summary: 'List doctor recurring availability' })
-  getAvailability(@CurrentUser() user: any, @Query() query: DoctorSlotsQueryDto) {
+  getAvailability(
+    @CurrentUser() user: any,
+    @Query() query: DoctorSlotsQueryDto,
+  ) {
     return this.doctorsService.getDoctorAvailability(user, query);
   }
 
   @Post('availability')
   @ApiOperation({ summary: 'Create recurring doctor availability' })
-  createAvailability(@Body() dto: CreateAvailabilityDto, @CurrentUser() user: any) {
+  createAvailability(
+    @Body() dto: CreateAvailabilityDto,
+    @CurrentUser() user: any,
+  ) {
     return this.doctorsService.createDoctorAvailability(user, dto);
   }
 
   @Patch('availability/:id')
   @ApiOperation({ summary: 'Update recurring doctor availability' })
-  updateAvailability(@Param('id') id: string, @Body() dto: UpdateAvailabilityDto, @CurrentUser() user: any) {
+  updateAvailability(
+    @Param('id') id: string,
+    @Body() dto: UpdateAvailabilityDto,
+    @CurrentUser() user: any,
+  ) {
     return this.doctorsService.updateDoctorAvailability(user, id, dto);
   }
 
@@ -91,7 +116,10 @@ export class DoctorPortalController {
 
   @Get('appointments')
   @ApiOperation({ summary: 'List doctor appointments' })
-  getAppointments(@Query() query: DoctorAppointmentsQueryDto, @CurrentUser() user: any) {
+  getAppointments(
+    @Query() query: DoctorAppointmentsQueryDto,
+    @CurrentUser() user: any,
+  ) {
     return this.doctorsService.getDoctorAppointments(user, query);
   }
 
@@ -123,7 +151,10 @@ export class DoctorPortalController {
 
   @Get('patients')
   @ApiOperation({ summary: 'List doctor patients' })
-  getPatients(@Query() query: DoctorPatientsQueryDto, @CurrentUser() user: any) {
+  getPatients(
+    @Query() query: DoctorPatientsQueryDto,
+    @CurrentUser() user: any,
+  ) {
     return this.doctorsService.getDoctorPatients(user, query);
   }
 
@@ -135,13 +166,19 @@ export class DoctorPortalController {
 
   @Post('medical-records')
   @ApiOperation({ summary: 'Create doctor medical record' })
-  createMedicalRecord(@Body() dto: DoctorCreateMedicalRecordDto, @CurrentUser() user: any) {
+  createMedicalRecord(
+    @Body() dto: DoctorCreateMedicalRecordDto,
+    @CurrentUser() user: any,
+  ) {
     return this.doctorsService.createDoctorMedicalRecord(user, dto);
   }
 
   @Get('medical-records')
   @ApiOperation({ summary: 'List doctor medical records' })
-  getMedicalRecords(@Query() query: DoctorRecordsQueryDto, @CurrentUser() user: any) {
+  getMedicalRecords(
+    @Query() query: DoctorRecordsQueryDto,
+    @CurrentUser() user: any,
+  ) {
     return this.doctorsService.getDoctorMedicalRecords(user, query);
   }
 
@@ -163,13 +200,19 @@ export class DoctorPortalController {
 
   @Post('prescriptions')
   @ApiOperation({ summary: 'Create doctor prescription' })
-  createPrescription(@Body() dto: DoctorCreatePrescriptionDto, @CurrentUser() user: any) {
+  createPrescription(
+    @Body() dto: DoctorCreatePrescriptionDto,
+    @CurrentUser() user: any,
+  ) {
     return this.doctorsService.createDoctorPrescription(user, dto);
   }
 
   @Get('prescriptions')
   @ApiOperation({ summary: 'List doctor prescriptions' })
-  getPrescriptions(@Query() query: DoctorPrescriptionsQueryDto, @CurrentUser() user: any) {
+  getPrescriptions(
+    @Query() query: DoctorPrescriptionsQueryDto,
+    @CurrentUser() user: any,
+  ) {
     return this.doctorsService.getDoctorPrescriptions(user, query);
   }
 
@@ -191,13 +234,19 @@ export class DoctorPortalController {
 
   @Get('earnings')
   @ApiOperation({ summary: 'Get doctor earnings summary' })
-  getEarnings(@Query() query: DoctorEarningsQueryDto, @CurrentUser() user: any) {
+  getEarnings(
+    @Query() query: DoctorEarningsQueryDto,
+    @CurrentUser() user: any,
+  ) {
     return this.doctorsService.getDoctorEarnings(user, query);
   }
 
   @Get('payments')
   @ApiOperation({ summary: 'List doctor payments' })
-  getPayments(@Query() query: DoctorPaymentsQueryDto, @CurrentUser() user: any) {
+  getPayments(
+    @Query() query: DoctorPaymentsQueryDto,
+    @CurrentUser() user: any,
+  ) {
     return this.doctorsService.getDoctorPayments(user, query);
   }
 }
