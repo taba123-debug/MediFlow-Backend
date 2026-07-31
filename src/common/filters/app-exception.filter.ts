@@ -116,12 +116,15 @@ export class AppExceptionFilter implements ExceptionFilter {
   }
 
   private defaultMessageForStatus(statusCode: number) {
-    if (statusCode === HttpStatus.BAD_REQUEST) return 'Bad request';
-    if (statusCode === HttpStatus.UNAUTHORIZED) return 'Unauthorized';
-    if (statusCode === HttpStatus.FORBIDDEN) return 'Forbidden';
-    if (statusCode === HttpStatus.NOT_FOUND) return 'Not found';
-    if (statusCode === HttpStatus.CONFLICT) return 'Conflict';
-    return 'Request failed';
+    const messagesByStatus: Record<number, string> = {
+      [HttpStatus.BAD_REQUEST]: 'Bad request',
+      [HttpStatus.UNAUTHORIZED]: 'Unauthorized',
+      [HttpStatus.FORBIDDEN]: 'Forbidden',
+      [HttpStatus.NOT_FOUND]: 'Not found',
+      [HttpStatus.CONFLICT]: 'Conflict',
+    };
+
+    return messagesByStatus[statusCode] ?? 'Request failed';
   }
 
   private toLabel(value: string) {

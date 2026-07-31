@@ -81,11 +81,7 @@ export class MedicalRecordsService {
       },
     });
     if (!record) throw new NotFoundException('Medical record not found.');
-    await this.assertRecordAccess(
-      record.patient.userId,
-      record.doctor.userId,
-      user,
-    );
+    this.assertRecordAccess(record.patient.userId, record.doctor.userId, user);
     return record;
   }
 
